@@ -72,24 +72,26 @@ public class RegexUDF extends ScalarFunction {
 //        return true;
 
 
-        Expression regexExpression = getChildren().get(0);
-        if (!regexExpression.evaluate(tuple, ptr)) {
+        Expression strExpression = getChildren().get(0);
+        if (!strExpression.evaluate(tuple, ptr)) {
             return false;
         }
 
-        String regex = (String)PVarchar.INSTANCE.toObject(ptr, regexExpression.getSortOrder());
+        String sourceStr = (String)PVarchar.INSTANCE.toObject(ptr, strExpression.getSortOrder());
 
-        if (regex == null) {
+        if (sourceStr == null) {
             return true;
         }
 
-        Expression colExpression = getChildren().get(1);
-        if (!colExpression.evaluate(tuple, ptr)) {
+        Expression typeExpression = getChildren().get(1);
+        if (!typeExpression.evaluate(tuple, ptr)) {
             return false;
         }
 
-        String str=new String(ptr.copyBytes());
-        String[] token=str.split(",");
+        String regex = (String)PVarchar.INSTANCE.toObject(ptr, typeExpression.getSortOrder());
+
+        //String str=new String(ptr.copyBytes());
+        String[] token=sourceStr.split(",");
         int count=0;
         StringBuilder stringBuilder=new StringBuilder();
         for (String fileName:token) {
@@ -109,11 +111,6 @@ public class RegexUDF extends ScalarFunction {
         byte[] target = stringBuilder.toString().getBytes();
         ptr.set(target);
         return true;
-    }
-
-    @Override
-    public SortOrder getSortOrder() {
-        return getChildren().get(0).getSortOrder();
     }
 
     @Override
